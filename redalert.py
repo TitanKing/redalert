@@ -1,7 +1,14 @@
 import pifacedigitalio as pfio
 pfd = pfio.PiFaceDigital()
+from time import sleep
 
-pfd.leds[2].toggle()
+while True:
+    sleep(1)
+    pfd.leds[1].toggle()
+    sleep(1)
+    pfd.leds[2].toggle()
+    sleep(1)
+    pfd.leds[3].toggle()
 
 # pfio.init()
 # from time import sleep
