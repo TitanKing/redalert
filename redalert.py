@@ -1,6 +1,9 @@
 import pifacedigitalio as pfio
+import subprocess
 pfd = pfio.PiFaceDigital()
 from time import sleep
+
+subprocess.check_output('echo "Red alert security system started" | festival --tts', shell=True)
 
 while True:
     sleep(1)
