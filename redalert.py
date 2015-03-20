@@ -3,7 +3,7 @@ import subprocess
 pfd = pfio.PiFaceDigital()
 from time import sleep
 
-subprocess.check_output('123" | festival --tts', shell=True)
+subprocess.check_output('echo "1 2 3" | festival --tts', shell=True)
 
 pfd.output_pins[0].value = 1
 
