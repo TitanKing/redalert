@@ -1,15 +1,24 @@
-import pifacedigitalio as pfio
-import subprocess
-pfd = pfio.PiFaceDigital()
-from time import sleep
+import piFace
 
-subprocess.check_output('echo "1 2 3" | festival --tts', shell=True)
 
-pfd.output_pins[0].value = 1
+redAlert = piFace.RedAlert()
+redAlert.input_listen1()
+redAlert.input_listen7()
+redAlert.start_listener()
 
+# redAlert.input_listen(0)
+# redAlert.input_listen(1)
+# redAlert.input_listen(2)
+# redAlert.input_listen(3)
+# redAlert.input_listen(4)
+# redAlert.input_listen(5)
+# redAlert.input_listen(6)
+# redAlert.input_listen(7)
+
+# Hi Jason
 
 # while True:
-#    sleep(1)
+# sleep(1)
 #    pfd.leds[0].toggle()
 #    sleep(1)
 #    pfd.leds[1].toggle()
