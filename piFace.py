@@ -4,6 +4,9 @@ import http.server
 import urllib.parse
 import time
 import pifacedigitalio as pifaceapi
+import redModel
+
+
 piFaceO = pifaceapi.PiFaceDigital()
 
 
