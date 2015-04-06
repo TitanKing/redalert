@@ -5,12 +5,17 @@ db = db.cursor()
 
 class Get:
     @staticmethod
-    def all_zones():
+    def zone(zone_cat_id):
+        if zone_cat_id == "null":
+            return
+
         db.execute("""
             SELECT  zones.zone_id,
                     zones.zone_cat_id,
                     zones.input_cat_id,
+                    zones.input_nc,
                     zones.output_cat_id,
+                    zones.output_nc,
                     zones.output_timeout,
                     zones.output_timeout_nzone,
                     zones.input_cat_id_reset,
@@ -22,27 +27,30 @@ class Get:
             FROM    zones
             INNER
             JOIN    zone_categories ON zones.zone_cat_id = zone_categories.zone_cat_id
-        """)
+            WHERE   zone_categories.zone_cat_id = %d
+        """ % int(zone_cat_id))
 
         zz = []
 
         for data in db:
-            if data[11]:
-                cat_name = data[11]
+            if data[13]:
+                cat_name = data[13]
             else:
-                cat_name = data[10]
+                cat_name = data[12]
 
             z = {
                 'zone_id': data[0],
                 'zone_cat_id': data[1],
                 'input_cat_id': data[2],
-                'output_cat_id': data[3],
-                'output_timeout': data[4],
-                'output_timeout_nzone': data[5],
-                'output_cat_id_reset': data[6],
-                'output_cat_id_reset_nzone': data[7],
-                'time_reset': data[8],
-                'time_reset_nzone': data[9],
+                'input_nc': data[3],
+                'output_cat_id': data[4],
+                'output_nc': data[5],
+                'output_timeout': data[6],
+                'output_timeout_nzone': data[7],
+                'output_cat_id_reset': data[8],
+                'output_cat_id_reset_nzone': data[9],
+                'time_reset': data[10],
+                'time_reset_nzone': data[11],
                 'zone_name': cat_name
             }
 
@@ -52,6 +60,9 @@ class Get:
 
     @staticmethod
     def input_cats(cat_id):
+        if cat_id == "null":
+            return
+
         db.execute("""
           SELECT  input_categories.input_cat_id,
                   input_categories.input_cat_name,
@@ -60,8 +71,8 @@ class Get:
           FROM    input_categories
           INNER
           JOIN    inputs ON input_categories.input_cat_id = inputs.input_cat_id
-          WHERE   input_categories.input_cat_id = %s
-        """ % str(cat_id))
+          WHERE   input_categories.input_cat_id = %d
+        """ % int(cat_id))
 
         ci = []
 
@@ -83,6 +94,9 @@ class Get:
     
     @staticmethod
     def output_cats(cat_id):
+        if cat_id == "null":
+            return
+
         db.execute("""
           SELECT  output_categories.output_cat_id,
                   output_categories.output_cat_name,
@@ -91,8 +105,8 @@ class Get:
           FROM    output_categories
           INNER
           JOIN    outputs ON output_categories.output_cat_id = outputs.output_cat_id
-          WHERE   output_categories.output_cat_id = %s
-        """ % str(cat_id))
+          WHERE   output_categories.output_cat_id = %d
+        """ % int(cat_id))
 
         ci = []
 

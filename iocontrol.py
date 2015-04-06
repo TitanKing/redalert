@@ -26,7 +26,14 @@ piFace = pifacedigitalio.PiFaceDigital()
 # Easy.
 ###########################################
 class IO:
+    def __init__(self):
+        self.io = []
+        self.active_output = []
+
     def controller(self, state):
+        self.io = state
+        self.zones()
+        """
         if self.output_listen(state):
             if self.input_listen_reset(state) or self.output_timeout_reset(state):
                 self.output_controller_disengage(state)
@@ -35,6 +42,36 @@ class IO:
         else:
             if self.input_listen(state):
                 self.output_controller(state)
+        """
+
+    def zones(self):
+        if self.io.zones:
+            for zzz in self.io.zones:
+                self.input_listen(zzz)
+        else:
+            return False
+
+    def input_listen(self, zone):
+        if zone['inputs']:
+            inputs_trigger = []
+            for inputs in zone['inputs']:
+                i = int(inputs['input_pin'])
+                if int(piFace.input_pins[i].value) == 0:
+                    inputs_trigger.append(True if zone['input_nc'] else False)
+                else:
+                    inputs_trigger.append(False if zone['input_nc'] else True)
+
+            if inputs_trigger:
+                if False in inputs_trigger:
+                    return False
+                else:
+                    print("Input Triggered:" + str(zone['inputs'][0]['input_cat_name']))
+                    self.active_output = zone
+                    return True
+        else:
+            return False
+
+
 
     @staticmethod
     def input_listen_combo(state):
@@ -53,7 +90,7 @@ class IO:
                 input_pin_b = input_pin_a + 1
 
     @staticmethod
-    def input_listen(state):
+    def input_listen_(state):
         input_pin = 0
         while input_pin < 8:
             if int(state.config["input_" + str(input_pin)]) and int(piFace.input_pins[input_pin].value):

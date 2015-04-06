@@ -29,8 +29,8 @@ import model
 # For reading inputs from RaspberryPi I/O
 # device, PiFace is default.
 ###########################################
-#import iocontrol
-#iOc = iocontrol.IO()
+import iocontrol
+iOc = iocontrol.IO()
 
 ###########################################
 # Opens web server for API calls to control
@@ -45,16 +45,12 @@ import model
 ###########################################
 class State(object):
     def __init__(self):
-
-        self.armed = False
-        self.trigger = False
-        self.alarm = False
         self.running = False
-        self.config = ZoneBuilder().zones
+        self.zones = ZoneBuilder().zones
+
         self.active_output_pin = {0: False, 1: False, 2: False, 3: False, 4: False, 5: False, 6: False, 7: False}
         self.trigger_time = {0: 0, 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 7: 0}
 
-        """
         while True:
             time.sleep(float(config['poll_rate']))
             if self.running:
@@ -63,7 +59,6 @@ class State(object):
             self.running = True
             iOc.controller(self)
             self.running = False
-        """
 
 
 ###########################################
@@ -71,24 +66,26 @@ class State(object):
 ###########################################
 class ZoneBuilder():
     def __init__(self):
-        self.zones = False
-        self.default_zone = config['default_zone_state']
+        self.zones = []
+
+        default_zone = config['default_zone_state']
 
         db = model.Get()
-        all_zones = db.all_zones()
+        all_zones = db.zone(default_zone)
 
         z = []
         for z_cfg in all_zones:
-            if z_cfg['zone_cat_id'] == int(self.default_zone):
-                # Load input and output listeners
-                inputs = db.input_cats(z_cfg['input_cat_id'])
-                outputs = db.output_cats(z_cfg['output_cat_id'])
-                z.append(z_cfg)
+            # Load input and output listeners
+            inputs = db.input_cats(z_cfg['input_cat_id'])
+            outputs = db.output_cats(z_cfg['output_cat_id'])
+
+            z_cfg['inputs'] = inputs
+            z_cfg['outputs'] = outputs
+
+            z.append(z_cfg)
 
         if z:
             self.zones = z
-
-        print(z)
 
 
 ###########################################
