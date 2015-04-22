@@ -46,8 +46,11 @@ iOc = iocontrol.IO()
 class State(object):
     def __init__(self):
         self.running = False
-        self.zones = ZoneBuilder().zones
+        self.zb = ZoneBuilder()
+        self.zones = self.zb.zones
 
+        # If zone is triggered
+        self.active_zone = []
         self.active_output_pin = {0: False, 1: False, 2: False, 3: False, 4: False, 5: False, 6: False, 7: False}
         self.trigger_time = {0: 0, 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 7: 0}
 
@@ -57,36 +60,49 @@ class State(object):
                 time.sleep(float(config['poll_rate']))
                 continue
             self.running = True
-            iOc.controller(self)
+            new_zone = iOc.controller(self)
+            if new_zone is not None and int(new_zone):
+                self.select_zone(new_zone)
             self.running = False
 
+    def select_zone(self, zone):
+        zone = int(zone)
+        self.zb = ZoneBuilder(zone)
+        self.zones = self.zb.zones
+
 
 ###########################################
-# Controls and builds the ZONES_
+# Controls and builds zones.
 ###########################################
 class ZoneBuilder():
-    def __init__(self):
+    def __init__(self, selected_zone=None):
         self.zones = []
 
-        default_zone = config['default_zone_state']
+        if selected_zone is not None:
+            default_zone = selected_zone
+        else:
+            default_zone = config['default_zone_state']
 
         db = model.Get()
         all_zones = db.zone(default_zone)
+
+        print("Zone Category (" + str(default_zone) + ") Loaded")
 
         z = []
         for z_cfg in all_zones:
             # Load input and output listeners
             inputs = db.input_cats(z_cfg['input_cat_id'])
             outputs = db.output_cats(z_cfg['output_cat_id'])
+            inputs_reset = db.input_cats(z_cfg['output_cat_id_reset'])
 
             z_cfg['inputs'] = inputs
             z_cfg['outputs'] = outputs
+            z_cfg['inputs_reset'] = inputs_reset
 
             z.append(z_cfg)
 
         if z:
             self.zones = z
-
 
 ###########################################
 # Start the listener

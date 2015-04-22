@@ -23,11 +23,14 @@ class Get:
                     zones.time_reset,
                     zones.time_reset_nzone,
                     zone_categories.zone_cat_name,
-                    zone_categories.zone_cat_alt_name
+                    zone_categories.zone_cat_alt_name,
+                    zones.rank
             FROM    zones
             INNER
             JOIN    zone_categories ON zones.zone_cat_id = zone_categories.zone_cat_id
             WHERE   zone_categories.zone_cat_id = %d
+            ORDER
+            BY      zones.rank ASC
         """ % int(zone_cat_id))
 
         zz = []

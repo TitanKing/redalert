@@ -28,11 +28,25 @@ piFace = pifacedigitalio.PiFaceDigital()
 class IO:
     def __init__(self):
         self.io = []
-        self.active_output = []
 
     def controller(self, state):
         self.io = state
-        self.zones()
+        if self.output_listen():
+            if state.active_zone:
+                if self.input_listen_reset():
+                    if self.default_state():
+                        if str(state.active_zone["output_cat_id_reset_nzone"]) != "null":
+                            return int(state.active_zone["output_cat_id_reset_nzone"])
+                else:
+                    print("Active State Reached")
+                    print(state.active_zone)
+        elif self.zones():
+            if state.active_zone:
+                print(state.active_zone)
+                self.output()
+
+        return None
+
         """
         if self.output_listen(state):
             if self.input_listen_reset(state) or self.output_timeout_reset(state):
@@ -44,10 +58,29 @@ class IO:
                 self.output_controller(state)
         """
 
+    def default_state(self):
+        output_pin = 0
+        while output_pin < 8:
+            print("Turning off " + "output_" + str(output_pin))
+            piFace.output_pins[output_pin].turn_off()
+            self.io.active_output_pin[output_pin] = False
+            output_pin += 1
+        return True
+
+    def output(self):
+        if self.io.active_zone and self.io.active_zone['outputs']:
+            for outputs in self.io.active_zone['outputs']:
+                print("Turning on " + "output_" + str(outputs['output_pin']))
+                piFace.output_pins[int(outputs['output_pin'])].turn_on()
+                self.io.active_output_pin[outputs['output_pin']] = True
+                self.io.trigger_time[outputs['output_pin']] = time.time()
+
     def zones(self):
+        if self.io.active_zone:
+            return False
         if self.io.zones:
             for zzz in self.io.zones:
-                self.input_listen(zzz)
+                return self.input_listen(zzz)
         else:
             return False
 
@@ -66,12 +99,42 @@ class IO:
                     return False
                 else:
                     print("Input Triggered:" + str(zone['inputs'][0]['input_cat_name']))
-                    self.active_output = zone
+                    self.io.active_zone = zone
                     return True
         else:
             return False
 
+    def input_listen_reset(self):
+        if self.io.active_zone['inputs_reset']:
+            az = self.io.active_zone
+            inputs_trigger = []
+            for inputs in az['inputs_reset']:
+                i = int(inputs['input_pin'])
+                if int(piFace.input_pins[i].value) == 0:
+                    inputs_trigger.append(True if az['input_nc'] else False)
+                else:
+                    inputs_trigger.append(False if az['input_nc'] else True)
 
+            if inputs_trigger:
+                if False in inputs_trigger:
+                    return False
+                else:
+                    print("Input Reset Triggered:" + str(az['inputs'][0]['input_cat_name']))
+                    return True
+        else:
+            return False
+
+    def output_listen(self):
+        output_pin = 0
+        while output_pin < 8:
+            if int(self.io.active_output_pin[output_pin]):
+                print("Output on " + "output_" + str(output_pin))
+                return True
+            output_pin += 1
+
+    """
+    Old Code ------------------ Old Code ------------------ Old Code
+    """
 
     @staticmethod
     def input_listen_combo(state):
@@ -99,7 +162,7 @@ class IO:
             input_pin += 1
 
     @staticmethod
-    def input_listen_reset(state):
+    def input_listen_reset_(state):
         input_pin = 0
         print("Listening to reset...")
         while input_pin < 8:
@@ -117,15 +180,6 @@ class IO:
                 if float(state.config["timeout_output_" + str(output_pin)]) <= (time.time() - int(state.trigger_time[output_pin])):
                     print("Timeout on " + "output_" + str(output_pin))
                     return True
-            output_pin += 1
-
-    @staticmethod
-    def output_listen(state):
-        output_pin = 0
-        while output_pin < 8:
-            if int(state.active_output_pin[output_pin]):
-                print("Output on " + "output_" + str(output_pin))
-                return True
             output_pin += 1
 
     @staticmethod
