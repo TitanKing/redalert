@@ -12,18 +12,14 @@
 import time
 
 ###########################################
-# For parsing the configuration file
-###########################################
-import configparser
-iniCfg = configparser.ConfigParser()
-iniCfg.sections()
-iniCfg.read('config.ini')
-config = iniCfg['DEFAULT']
-
-###########################################
 # Handles all database related stuff.
 ###########################################
 import model
+
+###########################################
+# For parsing the configuration file
+###########################################
+config = model.Get.config()
 
 ###########################################
 # For reading inputs from RaspberryPi I/O
@@ -61,14 +57,22 @@ class State(object):
                 continue
             self.running = True
             new_zone = iOc.controller(self)
-            if new_zone is not None and int(new_zone):
+
+            if new_zone is not None:
                 self.select_zone(new_zone)
+                print("Zone Loop:" + str(new_zone))
             self.running = False
 
     def select_zone(self, zone):
+        print("New Zone Category Requested (" + str(zone) + "")
         zone = int(zone)
         self.zb = ZoneBuilder(zone)
         self.zones = self.zb.zones
+
+        # If zone is triggered
+        self.active_zone = []
+        self.active_output_pin = {0: False, 1: False, 2: False, 3: False, 4: False, 5: False, 6: False, 7: False}
+        self.trigger_time = {0: 0, 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 7: 0}
 
 
 ###########################################
@@ -81,7 +85,7 @@ class ZoneBuilder():
         if selected_zone is not None:
             default_zone = selected_zone
         else:
-            default_zone = config['default_zone_state']
+            default_zone = config['default_zone']
 
         db = model.Get()
         all_zones = db.zone(default_zone)

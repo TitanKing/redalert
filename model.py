@@ -1,6 +1,7 @@
 import sqlite3
 db = sqlite3.connect('redalert.db')
 db = db.cursor()
+from time import gmtime, strftime
 
 
 class Get:
@@ -28,10 +29,10 @@ class Get:
             FROM    zones
             INNER
             JOIN    zone_categories ON zones.zone_cat_id = zone_categories.zone_cat_id
-            WHERE   zone_categories.zone_cat_id = %d
+            WHERE   zone_categories.zone_cat_id = ?
             ORDER
             BY      zones.rank ASC
-        """ % int(zone_cat_id))
+        """, (zone_cat_id,))
 
         zz = []
 
@@ -54,7 +55,7 @@ class Get:
                 'output_cat_id_reset_nzone': data[9],
                 'time_reset': data[10],
                 'time_reset_nzone': data[11],
-                'zone_name': cat_name
+                'zone_name': str(cat_name)
             }
 
             zz.append(z)
@@ -74,8 +75,8 @@ class Get:
           FROM    input_categories
           INNER
           JOIN    inputs ON input_categories.input_cat_id = inputs.input_cat_id
-          WHERE   input_categories.input_cat_id = %d
-        """ % int(cat_id))
+          WHERE   input_categories.input_cat_id = ?
+        """, (cat_id,))
 
         ci = []
 
@@ -88,7 +89,7 @@ class Get:
             c = {
                 'input_cat_id': data[0],
                 'input_pin': data[3],
-                'input_cat_name': cat_name
+                'input_cat_name': str(cat_name)
             }
 
             ci.append(c)
@@ -108,8 +109,8 @@ class Get:
           FROM    output_categories
           INNER
           JOIN    outputs ON output_categories.output_cat_id = outputs.output_cat_id
-          WHERE   output_categories.output_cat_id = %d
-        """ % int(cat_id))
+          WHERE   output_categories.output_cat_id = ?
+        """, (cat_id,))
 
         ci = []
 
@@ -122,9 +123,34 @@ class Get:
             c = {
                 'output_cat_id': data[0],
                 'output_pin': data[3],
-                'output_cat_name': cat_name
+                'output_cat_name': str(cat_name)
             }
 
             ci.append(c)
 
         return ci
+
+    @staticmethod
+    def config():
+        db.execute("""
+            SELECT  settings.setting_id,
+                    settings.setting_value,
+                    settings.setting_description
+            FROM    settings
+        """)
+
+        cfg = {}
+
+        for data in db:
+            cfg[data[0]] = data[1]
+
+        return cfg
+
+    @staticmethod
+    def log(description, log_type="status"):
+        log_datetime = strftime("%Y-%m-%d %H:%M:%S", gmtime())
+
+        db.execute("""
+            INSERT INTO logs (log_id, log_type, log_description, log_datetime)
+            VALUES (null, ?, ?, ?)
+        """, (log_type, description, log_datetime,))
