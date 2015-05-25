@@ -1,6 +1,7 @@
 import sqlite3
-db = sqlite3.connect('redalert.db')
-db = db.cursor()
+dbc = sqlite3.connect('redalert.db')
+dbc.isolation_level = None
+db = dbc.cursor()
 from time import gmtime, strftime
 
 
@@ -146,11 +147,16 @@ class Get:
 
         return cfg
 
+
+class Put:
     @staticmethod
-    def log(description, log_type="status"):
+    def log(description, log_type="status", log_tags=""):
         log_datetime = strftime("%Y-%m-%d %H:%M:%S", gmtime())
 
         db.execute("""
-            INSERT INTO logs (log_id, log_type, log_description, log_datetime)
-            VALUES (null, ?, ?, ?)
-        """, (log_type, description, log_datetime,))
+            INSERT INTO logs (log_id, log_type, log_description, log_datetime, log_tags)
+            VALUES (null, ?, ?, ?, ?)
+        """, (log_type, description, log_datetime, log_tags,))
+
+        print("{} | {} | {} | {}" . format(description, log_type, log_datetime, log_tags))
+        print("-------------------------------")

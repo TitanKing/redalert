@@ -5,6 +5,7 @@
 ;
 ; Whats This? This file should be executed, eg: python3 run.py
 """
+redalert_version = "0.2.0-Alpha"
 
 ###########################################
 # General libraries
@@ -41,6 +42,8 @@ iOc = iocontrol.IO()
 ###########################################
 class State(object):
     def __init__(self):
+        model.Put.log("RedAlert V" + redalert_version + " engine started", "startup", "initiate")
+
         self.running = False
         self.zb = ZoneBuilder()
         self.zones = self.zb.zones
@@ -60,11 +63,11 @@ class State(object):
 
             if new_zone is not None:
                 self.select_zone(new_zone)
-                print("Zone Loop:" + str(new_zone))
+                model.Put.log("Loop zone " + str(new_zone), "loop", "zone_" + str(new_zone))
             self.running = False
 
     def select_zone(self, zone):
-        print("New Zone Category Requested (" + str(zone) + "")
+        model.Put.log("Requesting zone category " + str(zone), "load", "zone_" + str(zone))
         zone = int(zone)
         self.zb = ZoneBuilder(zone)
         self.zones = self.zb.zones
@@ -90,7 +93,7 @@ class ZoneBuilder():
         db = model.Get()
         all_zones = db.zone(default_zone)
 
-        print("Zone Category (" + str(default_zone) + ") Loaded")
+        model.Put.log("Loading zone category " + str(default_zone), "setup", "zone_" + str(default_zone))
 
         z = []
         for z_cfg in all_zones:
