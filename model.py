@@ -22,8 +22,6 @@ class Get:
                     zones.output_timeout_nzone,
                     zones.input_cat_id_reset,
                     zones.input_cat_id_reset_nzone,
-                    zones.time_reset,
-                    zones.time_reset_nzone,
                     zone_categories.zone_cat_name,
                     zone_categories.zone_cat_alt_name,
                     zones.rank
@@ -38,10 +36,10 @@ class Get:
         zz = []
 
         for data in db:
-            if data[13]:
-                cat_name = data[13]
+            if data[11]:
+                cat_name = data[11]
             else:
-                cat_name = data[12]
+                cat_name = data[10]
 
             z = {
                 'zone_id': data[0],
@@ -54,8 +52,6 @@ class Get:
                 'output_timeout_nzone': data[7],
                 'output_cat_id_reset': data[8],
                 'output_cat_id_reset_nzone': data[9],
-                'time_reset': data[10],
-                'time_reset_nzone': data[11],
                 'zone_name': str(cat_name)
             }
 
@@ -149,8 +145,18 @@ class Get:
 
 
 class Put:
-    @staticmethod
-    def log(description, log_type="status", log_tags=""):
+    def __init__(self):
+        self.last_log = ""
+
+    def log(self, description, log_type="status", log_tags=""):
+        last_log_compare = str(log_type) + "_" + str(log_tags)
+
+        # This simply checks to make sure we do not fill the logs with the same messages.
+        if str(last_log_compare) == str(self.last_log):
+            return
+        else:
+            self.last_log = str(last_log_compare)
+
         log_datetime = strftime("%Y-%m-%d %H:%M:%S", gmtime())
 
         db.execute("""
@@ -158,5 +164,5 @@ class Put:
             VALUES (null, ?, ?, ?, ?)
         """, (log_type, description, log_datetime, log_tags,))
 
-        print("{} | {} | {} | {}" . format(description, log_type, log_datetime, log_tags))
+        print("{} | {} | {} | {}" . format(description, log_type, log_datetime, log_tags,))
         print("-------------------------------")

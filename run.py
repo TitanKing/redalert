@@ -16,6 +16,7 @@ import time
 # Handles all database related stuff.
 ###########################################
 import model
+Put = model.Put()
 
 ###########################################
 # For parsing the configuration file
@@ -42,7 +43,7 @@ iOc = iocontrol.IO()
 ###########################################
 class State(object):
     def __init__(self):
-        model.Put.log("RedAlert V" + redalert_version + " engine started", "startup", "initiate")
+        Put.log("RedAlert V" + redalert_version + " engine started", "startup", "initiate")
 
         self.running = False
         self.zb = ZoneBuilder()
@@ -63,11 +64,11 @@ class State(object):
 
             if new_zone is not None:
                 self.select_zone(new_zone)
-                model.Put.log("Loop zone " + str(new_zone), "loop", "zone_" + str(new_zone))
+                Put.log("Loop zone " + str(new_zone), "loop", "zone_" + str(new_zone))
             self.running = False
 
     def select_zone(self, zone):
-        model.Put.log("Requesting zone category " + str(zone), "load", "zone_" + str(zone))
+        Put.log("Requesting zone category " + str(zone), "load", "zone_" + str(zone))
         zone = int(zone)
         self.zb = ZoneBuilder(zone)
         self.zones = self.zb.zones
@@ -93,7 +94,7 @@ class ZoneBuilder():
         db = model.Get()
         all_zones = db.zone(default_zone)
 
-        model.Put.log("Loading zone category " + str(default_zone), "setup", "zone_" + str(default_zone))
+        Put.log("Loading zone category " + str(default_zone), "setup", "zone_" + str(default_zone))
 
         z = []
         for z_cfg in all_zones:
